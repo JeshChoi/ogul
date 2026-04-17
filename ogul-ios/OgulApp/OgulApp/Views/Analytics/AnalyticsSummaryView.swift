@@ -157,9 +157,9 @@ private struct SwellingSparkline: View {
     var body: some View {
         GeometryReader { geo in
             let values = trend.map { $0.swellingPercent }
-            let max = values.max() ?? 1
+            let maxVal = values.max() ?? 1
             let min = values.min() ?? 0
-            let range = max - min == 0 ? 1.0 : max - min
+            let range = maxVal - min == 0 ? 1.0 : maxVal - min
             let w = geo.size.width
             let h = geo.size.height
 

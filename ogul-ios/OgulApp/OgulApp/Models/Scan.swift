@@ -42,6 +42,11 @@ struct Scan: Identifiable, Codable {
     var notes: String
     var analytics: ScanAnalytics?
     let createdAt: Date
+
+    /// Path to the JPEG photo saved locally on device.
+    var localPhotoPath: String?
+    /// Path to the binary mesh file saved locally on device.
+    var localMeshPath: String?
 }
 
 // MARK: - Mock Data
