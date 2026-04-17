@@ -1,85 +1,134 @@
 # Ogul
 
-Ogul is a system for tracking facial changes over time using iPhone-based 3D capture and a backend processing pipeline. It quantifies swelling, asymmetry, and structural variation to enable longitudinal monitoring of post-surgical recovery.
+A system for tracking facial changes over time using iPhone-based 3D capture and a backend processing pipeline.
+
+The primary use case is **post-surgical facial swelling tracking** — guided repeated scans, objective geometric analytics, and longitudinal trend visualization.
+
+> Existing systems measure faces at a single point in time. Ogul measures how faces change over time.
 
 ---
 
-## 🧠 Overview
+## Repository Structure
 
-Modern smartphones can capture high-quality 3D facial data, but existing tools focus on single snapshots rather than how faces change over time.
-
-Ogul addresses this gap by:
-- capturing consistent facial scans via iOS  
-- aligning scans across time  
-- computing geometric differences  
-- generating time-series analytics  
-
-> The goal is to turn raw facial scans into meaningful, trackable signals.
-
----
-
-## 🏗️ System Architecture
-
-Ogul is designed as a multi-layer system:
-
-### 📱 Capture Layer (iOS)
-- Guided facial scanning using ARKit + TrueDepth  
-- Ensures consistent pose, framing, and lighting  
-- Local storage and upload pipeline  
-
-### ☁️ Backend Pipeline
-- Scan ingestion and storage  
-- 3D face reconstruction  
-- Facial landmark detection  
-- Pose normalization and alignment  
-- Mesh comparison across time  
-
-### 📊 Analytics Layer
-- Facial volume change (%)  
-- Left/right asymmetry  
-- Surface displacement heatmaps  
-- Longitudinal trend tracking  
+```
+ogul/
+├── ogul-ios/          iOS app — guided capture, scan history, analytics
+├── ogul-backend/      Go API — scan ingestion, processing pipeline, analytics
+├── ogul-web/          Next.js dashboard — landing page, analytics viewer
+└── docs/
+    ├── architecture.md   System architecture and data flow
+    ├── roadmap.md        Phased development plan
+    ├── api-contract.md   REST API specification
+    └── data-models.md    Canonical shared data types
+```
 
 ---
 
-## 🔄 Data Flow
+## System Overview
 
-1. User performs guided scan on iOS  
-2. Scan data is stored locally and uploaded  
-3. Backend processes and aligns scans  
-4. Geometric differences are computed  
-5. Analytics are returned to client  
+```
+iPhone (SwiftUI + ARKit)
+  ↓ POST /scans
+Go Backend (ogul-backend)
+  ↓ stores metadata + mesh
+Processing Pipeline
+  ↓ aligns scans, computes geometry
+Analytics Service
+  ↓ returns swelling %, asymmetry score, trend
+Next.js Dashboard (ogul-web)
+```
 
----
-
-## 🎯 Use Case
-
-- Post-surgical facial swelling tracking  
-- Remote patient monitoring  
-- Objective recovery measurement  
-- Research on facial change over time  
-
----
-
-## 🚀 Goals
-
-- Build a robust pipeline for noisy real-world 3D data  
-- Enable consistent, repeatable facial measurements  
-- Extract meaningful signals from time-series geometry  
-- Design a scalable mobile → backend → analytics system  
+See [`docs/architecture.md`](docs/architecture.md) for the full diagram.
 
 ---
 
-## 🧩 Repositories
+## Services
 
-- `ogul-ios` → iOS capture client  
-- `ogul-backend` → processing + analytics pipeline  
+### `ogul-ios` — Capture Client
+- SwiftUI app with 5 screens: onboarding, home, scan flow, history, analytics
+- API service stub wired to `ogul-backend`
+- ARKit TrueDepth integration in Phase 3
+
+```bash
+# See ogul-ios/README.md for Xcode setup instructions
+```
+
+### `ogul-backend` — API Server
+- Go 1.22+, stdlib only (no frameworks)
+- REST endpoints for scan lifecycle and analytics
+- Mocked responses in Phase 1; PostgreSQL in Phase 2
+
+```bash
+cd ogul-backend
+make run        # starts on :8080
+```
+
+### `ogul-web` — Dashboard
+- Next.js 14 App Router, TypeScript, Tailwind CSS
+- Landing page, recovery dashboard, scan timeline
+- Mocked data in Phase 1; live API in Phase 2
+
+```bash
+cd ogul-web
+npm install
+cp .env.example .env.local
+npm run dev     # starts on :3000
+```
 
 ---
 
-## 🔥 Key Idea
+## API (Phase 1)
 
-> Existing systems measure faces at a single point in time.  
-> Ogul measures how faces change over time.
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Service health |
+| `POST` | `/scans` | Create scan record |
+| `GET` | `/scans/:id` | Get scan by ID |
+| `GET` | `/users/:id/scans` | User's scan list |
+| `GET` | `/users/:id/analytics` | Aggregate analytics + trend |
+
+Full spec: [`docs/api-contract.md`](docs/api-contract.md)
 
 ---
+
+## Core Data Model
+
+```json
+{
+  "id": "scan_abc123",
+  "userId": "user_1",
+  "capturedAt": "2026-04-16T18:00:00Z",
+  "status": "complete",
+  "qualityScore": 0.91,
+  "notes": "Day 3 post-op",
+  "analytics": {
+    "swellingPercent": 12.4,
+    "asymmetryScore": 0.08
+  }
+}
+```
+
+Full model definitions: [`docs/data-models.md`](docs/data-models.md)
+
+---
+
+## Roadmap
+
+| Phase | Scope |
+|-------|-------|
+| **1** (current) | Scaffold — API skeleton, SwiftUI screens, web UI, mocked data |
+| **2** | Real persistence (PostgreSQL), auth, upload pipeline |
+| **3** | ARKit TrueDepth capture, mesh file ingestion |
+| **4** | Geometric processing, analytics computation |
+| **5** | Clinical features, multi-patient, reporting |
+
+Full roadmap: [`docs/roadmap.md`](docs/roadmap.md)
+
+## To Get Started 
+```# Backend (Go 1.22+)
+cd ogul-backend && make run
+
+# Web
+cd ogul-web && npm install && cp .env.example .env.local && npm run dev
+
+# iOS: create Xcode project, add OgulApp/ files — see ogul-ios/README.md```

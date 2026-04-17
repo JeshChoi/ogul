@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# Editor
+.cursor/
+.vscode/
+
+# Service-specific ignores are in each subdirectory
